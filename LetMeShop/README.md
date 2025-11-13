@@ -1,0 +1,1 @@
+Revives players after dying in the shop. Highly configurable!

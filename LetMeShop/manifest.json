@@ -1,0 +1,9 @@
+{
+  "name": "LetMeShop",
+  "version_number": "1.1.2",
+  "description": "Revives the player shortly after dying in the shop",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2100"
+  ],
+  "website_url": ""
+}
