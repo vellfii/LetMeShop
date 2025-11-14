@@ -75,7 +75,7 @@ public class LetMeShop : BaseUnityPlugin
 
     private static void GetHostConfig(EventData data)
     {
-        float[] config = data.CustomData as float[];
+        float[] config = (float[]) data.CustomData;
         hostRespawnTime = config[0];
         hostRespawnHealth = config[1];
         hostRespawnInv = config[2];

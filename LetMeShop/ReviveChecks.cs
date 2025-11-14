@@ -41,7 +41,7 @@ public class ReviveChecks
 
     public static void GetStates(EventData data)
     {
-        Dictionary<string, object>[] states = data.CustomData as Dictionary<string, object>[];
+        Dictionary<string, object>[] states = (Dictionary<string, object>[]) data.CustomData;
         _deathTimers =  states[0];
         _deathStates = states[1];
         _invulnerableTimers = states[2];
