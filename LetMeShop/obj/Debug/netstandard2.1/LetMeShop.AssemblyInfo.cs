@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("endersaltz")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ccec647007e74cb8ea03aed6da423d67765cca36")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8452247629613f7c299125116e1959267f1be827")]
 [assembly: System.Reflection.AssemblyProductAttribute("LetMeShop")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LetMeShop")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

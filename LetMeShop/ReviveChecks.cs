@@ -9,7 +9,6 @@ namespace LetMeShop;
 
 public class ReviveChecks
 {
-    public static Dictionary<string, object>[] _playerStates = new Dictionary<string, object>[4];
     private static Dictionary<string, object> _deathTimers = new Dictionary<string, object>();
     private static Dictionary<string, object> _deathStates = new Dictionary<string, object>();
     private static Dictionary<string, object> _invulnerableTimers = new Dictionary<string, object>();
@@ -18,13 +17,8 @@ public class ReviveChecks
     public static void Update()
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer() || !SemiFunc.RunIsShop()) return;
-        LetMeShop.sendStates.RaiseEvent(_playerStates, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
         FetchPlayerStates();
         TryReviving();
-        _playerStates[0] = _deathTimers;
-        _playerStates[1] = _deathStates;
-        _playerStates[2] = _invulnerableTimers;
-        _playerStates[3] = _invulnerableStates;
     }
 
     private static void FetchPlayerStates()
@@ -37,15 +31,6 @@ public class ReviveChecks
             if ((float) _invulnerableTimers[player.steamID] > 0) _invulnerableTimers[player.steamID] = (float) _invulnerableTimers[player.steamID] - Time.deltaTime;
             _invulnerableStates[player.steamID] = (float) _invulnerableTimers[player.steamID] > 0;
         }
-    }
-
-    public static void GetStates(EventData data)
-    {
-        Dictionary<string, object>[] states = (Dictionary<string, object>[]) data.CustomData;
-        _deathTimers =  states[0];
-        _deathStates = states[1];
-        _invulnerableTimers = states[2];
-        _invulnerableStates = states[3];
     }
 
     private static void TryReviving()

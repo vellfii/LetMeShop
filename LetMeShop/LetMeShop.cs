@@ -23,10 +23,10 @@ public class LetMeShop : BaseUnityPlugin
     public static float hostRespawnTime;
     public static float hostRespawnHealth;
     public static float hostRespawnInv;
-
-    public static NetworkedEvent sendStates;
-    public static NetworkedEvent sendConfig;
-    public static float[] configList = new float[3];
+    
+    public static NetworkedEvent sendRespawnTime;
+    public static NetworkedEvent sendRespawnHealth;
+    public static NetworkedEvent sendRespawnInv;
     
     private void Awake()
     {
@@ -40,8 +40,9 @@ public class LetMeShop : BaseUnityPlugin
 
         Harmony.CreateAndPatchAll(typeof(ReviveChecks));
         
-        sendStates = new NetworkedEvent("SendStates", ReviveChecks.GetStates);
-        sendConfig = new NetworkedEvent("SendConfig", GetHostConfig);
+        sendRespawnTime = new NetworkedEvent("SendRespawnTime", GetHostRespawnTime);
+        sendRespawnHealth = new NetworkedEvent("SendRespawnHealth", GetHostRespawnHealth);
+        sendRespawnInv = new NetworkedEvent("SendRespawnInv", GetHostRespawnInv);
         
         configRespawnTime = Config.Bind(
             "General",
@@ -67,17 +68,24 @@ public class LetMeShop : BaseUnityPlugin
     {
         ReviveChecks.Update();
         if (!SemiFunc.IsMasterClientOrSingleplayer()) return;
-        configList[0] = configRespawnTime.Value;
-        configList[1] = configRespawnHealth.Value;
-        configList[2] = configRespawnInv.Value;
-        sendConfig.RaiseEvent(configList, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
+        sendRespawnTime.RaiseEvent(configRespawnTime.Value, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
+        sendRespawnHealth.RaiseEvent(configRespawnHealth.Value, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
+        sendRespawnInv.RaiseEvent(configRespawnInv.Value, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
     }
 
-    private static void GetHostConfig(EventData data)
+    private static void GetHostRespawnTime(EventData data)
     {
-        float[] config = (float[]) data.CustomData;
-        hostRespawnTime = config[0];
-        hostRespawnHealth = config[1];
-        hostRespawnInv = config[2];
+        hostRespawnTime = (float) data.CustomData;
+        Instance.Logger.LogInfo(hostRespawnTime);
+    }
+    
+    private static void GetHostRespawnHealth(EventData data)
+    {
+        hostRespawnHealth = (float) data.CustomData;
+    }
+    
+    private static void GetHostRespawnInv(EventData data)
+    {
+        hostRespawnInv = (float) data.CustomData;
     }
 }
