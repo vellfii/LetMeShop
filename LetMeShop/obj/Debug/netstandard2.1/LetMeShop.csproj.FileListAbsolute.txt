@@ -22,3 +22,4 @@ C:\Users\camer\RiderProjects\LetMeShop\LetMeShop\obj\Debug\netstandard2.1\LetMeS
 C:\Users\camer\RiderProjects\LetMeShop\LetMeShop\obj\Debug\netstandard2.1\LetMeShop.AssemblyInfo.cs
 C:\Users\camer\RiderProjects\LetMeShop\LetMeShop\obj\Debug\netstandard2.1\LetMeShop.csproj.CoreCompileInputs.cache
 C:\Users\camer\RiderProjects\LetMeShop\LetMeShop\obj\Debug\netstandard2.1\LetMeShop.dll
+C:\Users\camer\RiderProjects\LetMeShop\LetMeShop\obj\Debug\netstandard2.1\LetMeShop.sourcelink.json
