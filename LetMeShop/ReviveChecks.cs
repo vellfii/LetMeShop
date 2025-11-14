@@ -9,10 +9,10 @@ namespace LetMeShop;
 
 public class ReviveChecks
 {
-    private static Dictionary<string, object> _deathTimers = new Dictionary<string, object>();
-    private static Dictionary<string, object> _deathStates = new Dictionary<string, object>();
-    private static Dictionary<string, object> _invulnerableTimers = new Dictionary<string, object>();
-    private static Dictionary<string, object> _invulnerableStates = new Dictionary<string, object>();
+    private static Dictionary<string, float> _deathTimers = new Dictionary<string, float>();
+    private static Dictionary<string, bool> _deathStates = new Dictionary<string, bool>();
+    private static Dictionary<string, float> _invulnerableTimers = new Dictionary<string, float>();
+    private static Dictionary<string, bool> _invulnerableStates = new Dictionary<string, bool>();
 
     public static void Update()
     {
@@ -23,14 +23,19 @@ public class ReviveChecks
 
     private static void FetchPlayerStates()
     {
-        if (!SemiFunc.IsMasterClientOrSingleplayer()) return;
+        Dictionary<string, bool> states = new Dictionary<string, bool>();
         foreach (PlayerAvatar player in GameDirector.instance.PlayerList)
         {
             _invulnerableTimers.TryAdd(player.steamID, 0);
+            _invulnerableStates.TryAdd(player.steamID, false);
             _deathStates.TryAdd(player.steamID, player.playerHealth.health <= 0);
-            if ((float) _invulnerableTimers[player.steamID] > 0) _invulnerableTimers[player.steamID] = (float) _invulnerableTimers[player.steamID] - Time.deltaTime;
-            _invulnerableStates[player.steamID] = (float) _invulnerableTimers[player.steamID] > 0;
+            if (_invulnerableTimers[player.steamID] > 0) _invulnerableTimers[player.steamID] -= Time.deltaTime;
+            _invulnerableStates[player.steamID] = _invulnerableTimers[player.steamID] > 0;
+            
+            states.TryAdd(player.steamID, _invulnerableStates[player.steamID]);
         }
+        LetMeShop.sendInvulnerableStatus.RaiseEvent(states, REPOLib.Modules.NetworkingEvents.RaiseAll, SendOptions.SendReliable);
+        LetMeShop.sendRespawnHealth.RaiseEvent(LetMeShop.configRespawnHealth.Value, REPOLib.Modules.NetworkingEvents.RaiseAll, SendOptions.SendReliable);
     }
 
     private static void TryReviving()
@@ -38,11 +43,17 @@ public class ReviveChecks
         foreach (PlayerAvatar player in GameDirector.instance.PlayerList)
         {
             _deathTimers.TryAdd(player.steamID, 0);
-            bool dead = (bool) _deathStates[player.steamID];
+            bool dead = _deathStates[player.steamID];
             if (!dead) _deathTimers[player.steamID] = 0;
             if (!dead) continue;
-            _deathTimers[player.steamID] = (float) _deathTimers[player.steamID] + Time.deltaTime;
-            if ((float) _deathTimers[player.steamID] > LetMeShop.configRespawnTime.Value) player.Revive();
+            _deathTimers[player.steamID] += Time.deltaTime;
+            if (_deathTimers[player.steamID] > LetMeShop.configRespawnTime.Value)
+            {
+                player.Revive();
+                _deathStates[player.steamID] = false;
+                _deathTimers[player.steamID] = 0;
+                _invulnerableTimers[player.steamID] = LetMeShop.configRespawnInv.Value;
+            }
         }
     }
 
@@ -58,7 +69,7 @@ public class ReviveChecks
     [HarmonyPrefix]
     private static void HurtPatch(PlayerHealth __instance, ref int damage, bool savingGrace, int enemyIndex)
     {
-        damage = (bool) _invulnerableStates[__instance.playerAvatar.steamID] ? 0 : damage;
+        damage = LetMeShop.invulnerable ? 0 : damage;
     }
 
     [HarmonyPatch(typeof(PlayerHealth), "Death")]
@@ -71,12 +82,8 @@ public class ReviveChecks
 
     [HarmonyPatch(typeof(PlayerAvatar), "Revive")]
     [HarmonyPrefix]
-    private static void RevivePatch(PlayerAvatar __instance, bool _revivedByTruck)
+    private static void RevivePatch(PlayerAvatar __instance)
     {
-        if (!SemiFunc.RunIsShop()) return;
-        _deathStates[__instance.steamID] = false;
-        _deathTimers[__instance.steamID] = 0;
-        _invulnerableTimers[__instance.steamID] = LetMeShop.configRespawnInv.Value;
-        __instance.playerHealth.health = (int) Math.Round(__instance.playerHealth.maxHealth * LetMeShop.configRespawnHealth.Value / 100);
+        __instance.playerHealth.health = LetMeShop.respawnHealth;
     }
 }

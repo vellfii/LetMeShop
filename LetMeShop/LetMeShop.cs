@@ -1,4 +1,6 @@
-﻿using BepInEx;
+﻿using System;
+using System.Collections.Generic;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using ExitGames.Client.Photon;
@@ -20,13 +22,11 @@ public class LetMeShop : BaseUnityPlugin
     public static ConfigEntry<float> configRespawnTime = null!;
     public static ConfigEntry<float> configRespawnHealth = null!;
     public static ConfigEntry<float> configRespawnInv = null!;
-    public static float hostRespawnTime;
-    public static float hostRespawnHealth;
-    public static float hostRespawnInv;
+    public static bool invulnerable;
+    public static int respawnHealth;
     
-    public static NetworkedEvent sendRespawnTime;
+    public static NetworkedEvent sendInvulnerableStatus;
     public static NetworkedEvent sendRespawnHealth;
-    public static NetworkedEvent sendRespawnInv;
     
     private void Awake()
     {
@@ -40,9 +40,8 @@ public class LetMeShop : BaseUnityPlugin
 
         Harmony.CreateAndPatchAll(typeof(ReviveChecks));
         
-        sendRespawnTime = new NetworkedEvent("SendRespawnTime", GetHostRespawnTime);
-        sendRespawnHealth = new NetworkedEvent("SendRespawnHealth", GetHostRespawnHealth);
-        sendRespawnInv = new NetworkedEvent("SendRespawnInv", GetHostRespawnInv);
+        sendInvulnerableStatus = new NetworkedEvent("SendInvulnerableStatus", GetInvulnerableStatus);
+        sendRespawnHealth = new NetworkedEvent("SendRespawnHealth", GetRespawnHealth);
         
         configRespawnTime = Config.Bind(
             "General",
@@ -67,25 +66,15 @@ public class LetMeShop : BaseUnityPlugin
     private void Update()
     {
         ReviveChecks.Update();
-        if (!SemiFunc.IsMasterClientOrSingleplayer()) return;
-        sendRespawnTime.RaiseEvent(configRespawnTime.Value, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
-        sendRespawnHealth.RaiseEvent(configRespawnHealth.Value, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
-        sendRespawnInv.RaiseEvent(configRespawnInv.Value, REPOLib.Modules.NetworkingEvents.RaiseOthers, SendOptions.SendReliable);
     }
 
-    private static void GetHostRespawnTime(EventData data)
+    private static void GetInvulnerableStatus(EventData data)
     {
-        hostRespawnTime = (float) data.CustomData;
-        Instance.Logger.LogInfo(hostRespawnTime);
+        invulnerable = ((Dictionary<string, bool>)data.CustomData)[PlayerAvatar.instance.steamID];
     }
-    
-    private static void GetHostRespawnHealth(EventData data)
+
+    private static void GetRespawnHealth(EventData data)
     {
-        hostRespawnHealth = (float) data.CustomData;
-    }
-    
-    private static void GetHostRespawnInv(EventData data)
-    {
-        hostRespawnInv = (float) data.CustomData;
+        respawnHealth = (int) Math.Round(PlayerAvatar.instance.playerHealth.maxHealth * (float) data.CustomData / 100);
     }
 }
