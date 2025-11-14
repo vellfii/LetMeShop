@@ -70,7 +70,9 @@ public class LetMeShop : BaseUnityPlugin
 
     private static void GetInvulnerableStatus(EventData data)
     {
-        invulnerable = ((Dictionary<string, bool>)data.CustomData)[PlayerAvatar.instance.steamID];
+        Dictionary<string, bool> statuses = (Dictionary<string, bool>)data.CustomData;
+        statuses.TryAdd(PlayerAvatar.instance.steamID, false);
+        invulnerable = statuses[PlayerAvatar.instance.steamID];
     }
 
     private static void GetRespawnHealth(EventData data)
